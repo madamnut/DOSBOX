@@ -1,0 +1,14 @@
+=== make_raw 시작 ===
+현재 작업 디렉터리: C:\Users\PC\Desktop\YD_Unity\DOSBOX\ORIGIN\data\Image\PNGs
+입력 파일: input.png
+input.png 존재 확인 완료
+원본 이미지 열기 성공: mode=RGBA, size=(320, 200)
+RGB 변환 완료
+256색 인덱스 변환 완료
+raw 데이터 생성 완료: 64000 bytes
+HELLO.RAW 저장 완료
+원본 palette 길이: 768 bytes
+HELLO.PAL 저장 완료: 768 bytes
+HELLO.RAW 크기 정상: 64000 bytes
+HELLO.PAL 크기 정상: 768 bytes
+=== 변환 완료 ===
