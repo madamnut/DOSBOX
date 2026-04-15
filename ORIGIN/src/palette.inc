@@ -1,4 +1,5 @@
 ; DX = zero-terminated filename
+; palette values must already be 0..63
 load_palette_direct:
     push ax
     push bx
@@ -35,18 +36,12 @@ load_palette_direct:
     mov dx, 03C9h
 
     mov al, [pal_triplet + 0]
-    shr al, 1
-    shr al, 1
     out dx, al
 
     mov al, [pal_triplet + 1]
-    shr al, 1
-    shr al, 1
     out dx, al
 
     mov al, [pal_triplet + 2]
-    shr al, 1
-    shr al, 1
     out dx, al
 
     pop cx
@@ -65,27 +60,5 @@ load_palette_direct:
     pop dx
     pop cx
     pop bx
-    pop ax
-    ret
-
-clear_palette_black:
-    push ax
-    push cx
-    push dx
-
-    mov dx, 03C8h
-    xor al, al
-    out dx, al
-
-    mov dx, 03C9h
-    mov cx, 768
-    xor al, al
-
-.black_loop:
-    out dx, al
-    loop .black_loop
-
-    pop dx
-    pop cx
     pop ax
     ret

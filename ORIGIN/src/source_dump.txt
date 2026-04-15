@@ -61,6 +61,7 @@ load_raw_to_vram:
     pop ds
     mov si, temp_buffer
     mov cx, ax
+    cld
     rep movsb
     pop ax
 
@@ -148,22 +149,23 @@ start:
     push cs
     pop es
     sti
+    cld
 
     call video_set_13h
 
     ; logo
+    call clear_vram
     mov dx, logo_pal
     call load_palette_direct
-
     mov dx, logo_raw
     call load_raw_to_vram
 
     call wait_3_seconds
 
     ; title
+    call clear_vram
     mov dx, title_pal
     call load_palette_direct
-
     mov dx, title_raw
     call load_raw_to_vram
 
@@ -221,10 +223,13 @@ load_palette_direct:
     jne .close_file_pop
 
     mov dx, 03C9h
+
     mov al, [pal_triplet + 0]
     out dx, al
+
     mov al, [pal_triplet + 1]
     out dx, al
+
     mov al, [pal_triplet + 2]
     out dx, al
 
@@ -333,6 +338,26 @@ video_set_13h:
 video_set_text:
     mov ax, 0003h
     int 10h
+    ret
+
+clear_vram:
+    push ax
+    push cx
+    push di
+    push es
+
+    cld
+    mov ax, SCREEN_SEG
+    mov es, ax
+    xor di, di
+    xor ax, ax
+    mov cx, 32000
+    rep stosw
+
+    pop es
+    pop di
+    pop cx
+    pop ax
     ret
 
 --- END FILE: video.inc ---
