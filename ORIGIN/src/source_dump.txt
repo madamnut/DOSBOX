@@ -1,0 +1,339 @@
+ROOT: C:\Users\PC\Desktop\YD_Unity\DOSBOX\ORIGIN\src
+TOTAL FILES: 11
+================================================================================
+
+================================================================================
+[FILE 1/11] defs.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: defs.inc ---
+
+%define RAW_CHUNK_SIZE       512
+%define SCREEN_SEG           0A000h
+%define BIOS_DATA_SEG        0040h
+%define BIOS_TICK_ADDR       006Ch
+%define THREE_SECONDS_TICKS  55
+
+--- END FILE: defs.inc ---
+================================================================================
+
+================================================================================
+[FILE 2/11] fileio.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: fileio.inc ---
+
+; DX = zero-terminated filename
+load_raw_to_vram:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push ds
+    push es
+
+    push cs
+    pop ds
+    mov ax, 3D00h
+    int 21h
+    jc .done
+
+    mov bx, ax
+
+    mov ax, SCREEN_SEG
+    mov es, ax
+    xor di, di
+
+.read_loop:
+    push cs
+    pop ds
+    mov dx, temp_buffer
+    mov cx, RAW_CHUNK_SIZE
+    mov ah, 3Fh
+    int 21h
+    jc .close_file
+
+    or ax, ax
+    jz .close_file
+
+    push ax
+    push cs
+    pop ds
+    mov si, temp_buffer
+    mov cx, ax
+    rep movsb
+    pop ax
+
+    jmp .read_loop
+
+.close_file:
+    mov ah, 3Eh
+    int 21h
+
+.done:
+    pop es
+    pop ds
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+--- END FILE: fileio.inc ---
+================================================================================
+
+================================================================================
+[FILE 3/11] input.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: input.inc ---
+
+input_check_esc:
+    mov al, 0
+    mov ah, 01h
+    int 16h
+    jz .done
+
+    mov ah, 00h
+    int 16h
+    cmp ah, 01h
+    jne .done
+
+    mov al, 1
+.done:
+    ret
+
+--- END FILE: input.inc ---
+================================================================================
+
+================================================================================
+[FILE 4/11] main.asm
+--------------------------------------------------------------------------------
+--- BEGIN FILE: main.asm ---
+
+org 100h
+
+jmp start
+
+%include "defs.inc"
+
+; -------------------------
+; data
+; -------------------------
+logo_raw    db 'data\Image\Title\LOGO.RAW',0
+logo_pal    db 'data\Image\Title\LOGO.PAL',0
+title_raw   db 'data\Image\Title\TITLE.RAW',0
+title_pal   db 'data\Image\Title\TITLE.PAL',0
+
+temp_buffer:
+    times RAW_CHUNK_SIZE db 0
+
+pal_triplet:
+    times 3 db 0
+
+%include "video.inc"
+%include "fileio.inc"
+%include "palette.inc"
+%include "timer.inc"
+%include "input.inc"
+
+; -------------------------
+; code
+; -------------------------
+start:
+    cli
+    push cs
+    pop ds
+    push cs
+    pop es
+    sti
+
+    call video_set_13h
+
+    ; logo
+    mov dx, logo_pal
+    call load_palette_direct
+
+    mov dx, logo_raw
+    call load_raw_to_vram
+
+    call wait_3_seconds
+
+    ; title
+    mov dx, title_pal
+    call load_palette_direct
+
+    mov dx, title_raw
+    call load_raw_to_vram
+
+title_loop:
+    call input_check_esc
+    cmp al, 1
+    jne title_loop
+
+exit_program:
+    call video_set_text
+    mov ax, 4C00h
+    int 21h
+
+--- END FILE: main.asm ---
+================================================================================
+
+================================================================================
+[FILE 5/11] palette.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: palette.inc ---
+
+; DX = zero-terminated filename
+; palette values must already be 0..63
+load_palette_direct:
+    push ax
+    push bx
+    push cx
+    push dx
+    push ds
+
+    push cs
+    pop ds
+    mov ax, 3D00h
+    int 21h
+    jc .done
+
+    mov bx, ax
+
+    mov dx, 03C8h
+    xor al, al
+    out dx, al
+
+    mov cx, 256
+
+.next_color:
+    push cx
+
+    push cs
+    pop ds
+    mov dx, pal_triplet
+    mov cx, 3
+    mov ah, 3Fh
+    int 21h
+    cmp ax, 3
+    jne .close_file_pop
+
+    mov dx, 03C9h
+    mov al, [pal_triplet + 0]
+    out dx, al
+    mov al, [pal_triplet + 1]
+    out dx, al
+    mov al, [pal_triplet + 2]
+    out dx, al
+
+    pop cx
+    loop .next_color
+    jmp .close_file
+
+.close_file_pop:
+    pop cx
+
+.close_file:
+    mov ah, 3Eh
+    int 21h
+
+.done:
+    pop ds
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+--- END FILE: palette.inc ---
+================================================================================
+
+================================================================================
+[FILE 6/11] scene.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: scene.inc ---
+
+
+
+--- END FILE: scene.inc ---
+================================================================================
+
+================================================================================
+[FILE 7/11] sound.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: sound.inc ---
+
+
+
+--- END FILE: sound.inc ---
+================================================================================
+
+================================================================================
+[FILE 8/11] sprite.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: sprite.inc ---
+
+
+
+--- END FILE: sprite.inc ---
+================================================================================
+
+================================================================================
+[FILE 9/11] text.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: text.inc ---
+
+
+
+--- END FILE: text.inc ---
+================================================================================
+
+================================================================================
+[FILE 10/11] timer.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: timer.inc ---
+
+wait_3_seconds:
+    push ax
+    push bx
+    push dx
+    push es
+
+    mov ax, BIOS_DATA_SEG
+    mov es, ax
+    mov bx, [es:BIOS_TICK_ADDR]
+
+.wait_loop:
+    mov dx, [es:BIOS_TICK_ADDR]
+    sub dx, bx
+    cmp dx, THREE_SECONDS_TICKS
+    jb .wait_loop
+
+    pop es
+    pop dx
+    pop bx
+    pop ax
+    ret
+
+--- END FILE: timer.inc ---
+================================================================================
+
+================================================================================
+[FILE 11/11] video.inc
+--------------------------------------------------------------------------------
+--- BEGIN FILE: video.inc ---
+
+video_set_13h:
+    mov ax, 0013h
+    int 10h
+    ret
+
+video_set_text:
+    mov ax, 0003h
+    int 10h
+    ret
+
+--- END FILE: video.inc ---
+================================================================================
