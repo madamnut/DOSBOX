@@ -13,6 +13,9 @@ TOTAL FILES: 11
 %define BIOS_TICK_ADDR       006Ch
 %define THREE_SECONDS_TICKS  55
 
+%define FONT_HEIGHT          16
+%define FONT_BYTES           4096
+
 --- END FILE: defs.inc ---
 ================================================================================
 
@@ -82,6 +85,42 @@ load_raw_to_vram:
     pop ax
     ret
 
+
+; DX = zero-terminated filename
+; loads exactly FONT_BYTES bytes into font_buffer
+load_font_file:
+    push ax
+    push bx
+    push cx
+    push dx
+    push ds
+
+    push cs
+    pop ds
+    mov ax, 3D00h
+    int 21h
+    jc .done
+
+    mov bx, ax
+
+    push cs
+    pop ds
+    mov dx, font_buffer
+    mov cx, FONT_BYTES
+    mov ah, 3Fh
+    int 21h
+
+    mov ah, 3Eh
+    int 21h
+
+.done:
+    pop ds
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
 --- END FILE: fileio.inc ---
 ================================================================================
 
@@ -90,7 +129,13 @@ load_raw_to_vram:
 --------------------------------------------------------------------------------
 --- BEGIN FILE: input.inc ---
 
-input_check_esc:
+; return AL:
+; 0 = none
+; 1 = up
+; 2 = down
+; 3 = enter
+; 4 = esc
+input_read_menu_key:
     mov al, 0
     mov ah, 01h
     int 16h
@@ -98,10 +143,37 @@ input_check_esc:
 
     mov ah, 00h
     int 16h
-    cmp ah, 01h
-    jne .done
 
+    cmp ah, 48h        ; up
+    je .key_up
+
+    cmp ah, 50h        ; down
+    je .key_down
+
+    cmp al, 13         ; enter
+    je .key_enter
+
+    cmp ah, 01h        ; esc
+    je .key_esc
+
+    jmp .done
+
+.key_up:
     mov al, 1
+    ret
+
+.key_down:
+    mov al, 2
+    ret
+
+.key_enter:
+    mov al, 3
+    ret
+
+.key_esc:
+    mov al, 4
+    ret
+
 .done:
     ret
 
@@ -126,6 +198,20 @@ logo_raw    db 'data\Image\Title\LOGO.RAW',0
 logo_pal    db 'data\Image\Title\LOGO.PAL',0
 title_raw   db 'data\Image\Title\TITLE.RAW',0
 title_pal   db 'data\Image\Title\TITLE.PAL',0
+font_file   db 'data\font\CGA-TH_D.F16',0
+
+menu_start          db 'START',0
+menu_start_sel      db '>> START <<',0
+menu_exit           db 'EXIT',0
+menu_exit_sel       db '>> EXIT <<',0
+
+menu_newgame        db 'NEW GAME',0
+menu_newgame_sel    db '>> NEW GAME <<',0
+menu_loadgame       db 'LOAD GAME',0
+menu_loadgame_sel   db '>> LOAD GAME <<',0
+
+menu_state      db 0      ; 0=main, 1=start submenu
+menu_index      db 0      ; 0 or 1
 
 temp_buffer:
     times RAW_CHUNK_SIZE db 0
@@ -133,11 +219,15 @@ temp_buffer:
 pal_triplet:
     times 3 db 0
 
+font_buffer:
+    times FONT_BYTES db 0
+
 %include "video.inc"
 %include "fileio.inc"
 %include "palette.inc"
 %include "timer.inc"
 %include "input.inc"
+%include "text.inc"
 
 ; -------------------------
 ; code
@@ -151,6 +241,9 @@ start:
     sti
     cld
 
+    mov dx, font_file
+    call load_font_file
+
     call video_set_13h
 
     ; logo
@@ -162,17 +255,181 @@ start:
 
     call wait_3_seconds
 
-    ; title
+    mov byte [menu_state], 0
+    mov byte [menu_index], 0
+    call redraw_title_menu
+
+title_loop:
+    call input_read_menu_key
+
+    cmp al, 0
+    je title_loop
+
+    cmp al, 1
+    je menu_up
+
+    cmp al, 2
+    je menu_down
+
+    cmp al, 3
+    je menu_enter
+
+    cmp al, 4
+    je menu_esc
+
+    jmp title_loop
+
+
+menu_up:
+    cmp byte [menu_index], 0
+    je title_loop
+    dec byte [menu_index]
+    call redraw_title_menu
+    jmp title_loop
+
+
+menu_down:
+    cmp byte [menu_index], 1
+    je title_loop
+    inc byte [menu_index]
+    call redraw_title_menu
+    jmp title_loop
+
+
+menu_enter:
+    cmp byte [menu_state], 0
+    je .main_enter
+
+    ; submenu: NEW GAME / LOAD GAME
+    ; not implemented yet -> exit
+    jmp exit_program
+
+.main_enter:
+    cmp byte [menu_index], 0
+    je .go_start_submenu
+
+    ; EXIT selected
+    jmp exit_program
+
+.go_start_submenu:
+    mov byte [menu_state], 1
+    mov byte [menu_index], 0
+    call redraw_title_menu
+    jmp title_loop
+
+
+menu_esc:
+    cmp byte [menu_state], 1
+    je .back_to_main
+
+    ; main menu: ESC does nothing
+    jmp title_loop
+
+.back_to_main:
+    mov byte [menu_state], 0
+    mov byte [menu_index], 0
+    call redraw_title_menu
+    jmp title_loop
+
+
+; -------------------------
+; redraw current title + menu
+; -------------------------
+redraw_title_menu:
+    push cs
+    pop ds
+
     call clear_vram
     mov dx, title_pal
     call load_palette_direct
     mov dx, title_raw
     call load_raw_to_vram
 
-title_loop:
-    call input_check_esc
-    cmp al, 1
-    jne title_loop
+    cmp byte [menu_state], 0
+    je draw_main_menu
+    jmp draw_start_submenu
+
+
+draw_main_menu:
+    ; normal = fill 0 / outline 255
+    ; selected = fill 255 / outline 0
+
+    ; START
+    cmp byte [menu_index], 0
+    je .start_selected
+
+    mov si, menu_start
+    mov dx, 128
+    mov cl, 0
+    mov ch, 255
+    call draw_string_outline_centered_8x16
+    jmp .draw_exit
+
+.start_selected:
+    mov si, menu_start_sel
+    mov dx, 128
+    mov cl, 255
+    mov ch, 0
+    call draw_string_outline_centered_8x16
+
+.draw_exit:
+    cmp byte [menu_index], 1
+    je .exit_selected
+
+    mov si, menu_exit
+    mov dx, 148
+    mov cl, 0
+    mov ch, 255
+    call draw_string_outline_centered_8x16
+    ret
+
+.exit_selected:
+    mov si, menu_exit_sel
+    mov dx, 148
+    mov cl, 255
+    mov ch, 0
+    call draw_string_outline_centered_8x16
+    ret
+
+
+draw_start_submenu:
+    ; NEW GAME
+    cmp byte [menu_index], 0
+    je .new_selected
+
+    mov si, menu_newgame
+    mov dx, 128
+    mov cl, 0
+    mov ch, 255
+    call draw_string_outline_centered_8x16
+    jmp .draw_load
+
+.new_selected:
+    mov si, menu_newgame_sel
+    mov dx, 128
+    mov cl, 255
+    mov ch, 0
+    call draw_string_outline_centered_8x16
+
+.draw_load:
+    cmp byte [menu_index], 1
+    je .load_selected
+
+    mov si, menu_loadgame
+    mov dx, 148
+    mov cl, 0
+    mov ch, 255
+    call draw_string_outline_centered_8x16
+    ret
+
+.load_selected:
+    mov si, menu_loadgame_sel
+    mov dx, 148
+    mov cl, 255
+    mov ch, 0
+    call draw_string_outline_centered_8x16
+    ret
+
 
 exit_program:
     call video_set_text
@@ -290,7 +547,280 @@ load_palette_direct:
 --------------------------------------------------------------------------------
 --- BEGIN FILE: text.inc ---
 
+; ----------------------------------------
+; draw_char_8x16
+; input:
+;   AL = character code
+;   BX = x
+;   DX = y
+;   CL = color
+; ----------------------------------------
+draw_char_8x16:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push bp
+    push ds
+    push es
 
+    xor ah, ah
+    shl ax, 1
+    shl ax, 1
+    shl ax, 1
+    shl ax, 1
+
+    push cs
+    pop ds
+    mov si, font_buffer
+    add si, ax
+
+    mov ax, SCREEN_SEG
+    mov es, ax
+
+    ; di = y * 320 + x
+    mov ax, dx
+    shl ax, 6
+    mov di, ax
+
+    mov ax, dx
+    shl ax, 8
+    add di, ax
+    add di, bx
+
+    mov bp, FONT_HEIGHT
+
+.row_loop:
+    lodsb
+    mov ah, al
+    mov bl, 8
+
+.pixel_loop:
+    test ah, 80h
+    jz .skip_pixel
+    mov al, cl
+    mov [es:di], al
+.skip_pixel:
+    shl ah, 1
+    inc di
+    dec bl
+    jnz .pixel_loop
+
+    add di, 320 - 8
+    dec bp
+    jnz .row_loop
+
+    pop es
+    pop ds
+    pop bp
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+
+; ----------------------------------------
+; draw_string_8x16
+; input:
+;   DS:SI = zero-terminated string
+;   BX = x
+;   DX = y
+;   CL = color
+; ----------------------------------------
+draw_string_8x16:
+    push ax
+    push bx
+    push dx
+    push si
+
+.next_char:
+    lodsb
+    or al, al
+    jz .done
+
+    call draw_char_8x16
+    add bx, 8
+    jmp .next_char
+
+.done:
+    pop si
+    pop dx
+    pop bx
+    pop ax
+    ret
+
+
+; ----------------------------------------
+; draw_string_outline_8x16
+; input:
+;   DS:SI = zero-terminated string
+;   BX = x
+;   DX = y
+;   CL = fill color
+;   CH = outline color
+; ----------------------------------------
+draw_string_outline_8x16:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+
+    mov [outline_fill_color], cl
+
+    ; up-left
+    dec bx
+    dec dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    inc bx
+    inc dx
+
+    ; up
+    dec dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    inc dx
+
+    ; up-right
+    inc bx
+    dec dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    dec bx
+    inc dx
+
+    ; left
+    dec bx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    inc bx
+
+    ; right
+    inc bx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    dec bx
+
+    ; down-left
+    dec bx
+    inc dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    inc bx
+    dec dx
+
+    ; down
+    inc dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    dec dx
+
+    ; down-right
+    inc bx
+    inc dx
+    push si
+    mov cl, ch
+    call draw_string_8x16
+    pop si
+    dec bx
+    dec dx
+
+    ; center fill
+    mov cl, [outline_fill_color]
+    push si
+    call draw_string_8x16
+    pop si
+
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+
+; ----------------------------------------
+; get_string_width_8x16
+; input:
+;   DS:SI = zero-terminated string
+; output:
+;   AX = width in pixels
+; ----------------------------------------
+get_string_width_8x16:
+    push si
+    xor ax, ax
+
+.count_loop:
+    lodsb
+    or al, al
+    jz .done
+    add ax, 8
+    jmp .count_loop
+
+.done:
+    pop si
+    ret
+
+
+; ----------------------------------------
+; draw_string_outline_centered_8x16
+; input:
+;   DS:SI = zero-terminated string
+;   DX = y
+;   CL = fill color
+;   CH = outline color
+; output:
+;   string centered on screen
+; ----------------------------------------
+draw_string_outline_centered_8x16:
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+
+    push si
+    call get_string_width_8x16
+    pop si
+
+    ; BX = 160 - (AX / 2)
+    mov bx, ax
+    shr bx, 1
+    mov ax, 160
+    sub ax, bx
+    mov bx, ax
+
+    call draw_string_outline_8x16
+
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+
+
+outline_fill_color db 0
 
 --- END FILE: text.inc ---
 ================================================================================
