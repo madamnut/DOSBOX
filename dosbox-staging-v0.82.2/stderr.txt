@@ -1,0 +1,58 @@
+[1;0m[1;2m2026-04-17 18:21:10.012 | [1;0mSDL: version 2.30.8 initialised (windows video and wasapi audio)[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.013 | [1;0mDISPLAY: Using 1067x800 window size in windowed mode on display-0[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.298 | [1;0mOPENGL: Vendor: NVIDIA Corporation[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.299 | [1;0mOPENGL: Version: 4.6.0 NVIDIA 566.03[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.299 | [1;0mOPENGL: GLSL version: 4.60 NVIDIA[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.299 | [1;0mOPENGL: NPOT textures supported[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.299 | [1;0mRENDER: Using adaptive CRT shader based on the graphics standard of the video mode[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.310 | [1;0mRENDER: Auto-switched to shader 'crt/hercules'[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.310 | [1;0mVGA: Pixel doubling enabled[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.311 | [1;0mVIDEO: Using the DOS video mode's frame rate[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.316 | [1;0mMEMORY: Using 4096 DOS memory pages (16 MB) at address: 000001DF7DD52060[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.317 | [1;0mVIDEO: Initialised S3 Trio64 VESA 2.0 compatible with 4 MB of FP DRAM supporting 89 modes[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.320 | [1;0mVGA: Double scanning VGA video modes enabled[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.320 | [1;0mVOODOO: Initialized with 4 MB of RAM, 16 threads, and bilinear filtering[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.320 | [1;0mCAPTURE: Image capturer started[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.337 | [1;0mMIXER: Initialised stereo 48000 Hz audio with 1024 sample frame buffer[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.337 | [1;0mMIXER: Master compressor enabled[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.432 | [1;0mMIDI: Opened device: win32[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.434 | [1;0mMPU-401: Running in intelligent mode on ports 330h and 331h[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.434 | [1;0mOPL: Operating at 49716 Hz and downsampling to the output rate[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.435 | [1;0mOPL: Running OPL3 on ports 220h and 388h[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.435 | [1;0mOPL: Sound Blaster 16 OPL output filter enabled[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.435 | [1;0mDMA: Initialised primary controller[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.436 | [1;0mDMA: Initialised secondary controller[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.436 | [1;0mSB: Operating at 22050 Hz and upsampling to the output rate[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.436 | [1;0mSB16: Modern DAC output filter enabled[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.436 | [1;0mSB16: Setting 'BLASTER' environment variable to 'A220 I7 D1 H5 T6'[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.437 | [1;0mSB16: Running on port 220h, IRQ 7, DMA 1, and high DMA 5[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.437 | [1;0mPCSPEAKER: Operating at 32000 Hz and upsampling to the output rate[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.438 | [1;0mPCSPEAKER: Initialised impulse model[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.438 | [1;0mPCSPEAKER: High-pass filter enabled (18 dB/oct at 120 Hz)[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.438 | [1;0mPCSPEAKER: Low-pass filter enabled (18 dB/oct at 4300 Hz)[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.438 | [1;0mMOUSE: Will be captured after the first left or right button click[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.439 | [1;0mMOUSE: Middle button will capture/release the mouse (clicks not sent to the game/program)[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.439 | [1;0mMOUSE (PS/2): Standard, 3 buttons[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.452 | [1;0mDOS: Loaded modern locale for country 1, 'United States'[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.452 | [1;0mSLIRP: Slirp version: 4.8.0[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.453 | [1;0mSLIRP: Successfully initialized[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.453 | [1;0mNE2000: Initialised on port 300h and IRQ 3[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.456 | [1;0mCONFIG: Loaded auto-mounted drive config file 'resources\drives\y.conf'[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.456 | [1;0mAUTOEXEC: Using autoexec from one or more joined sections[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.575 | [1;0mMAPPER: No joysticks found[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.576 | [1;0mMAPPER: Loaded default key bindings[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.596 | [1;0mRENDER: Auto-switched to shader 'crt/vga-4k'[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.604 | [1;0mSDL: Using standard SDI (auto) display refresh rate of 60 Hz[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.611 | [1;0mDISPLAY: VGA 720x400 16-colour text mode 03h at 70.087 Hz throttled VFR, scaled to 2133x1600 pixels with 1:1.35 (20:27) pixel aspect ratio[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.612 | [1;0mOPENGL: Enabled non-adaptive vsync[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.613 | [1;0mMOUNT: Path 'resources\drives\y' found[1;0m
+[1;0m[1;2m2026-04-17 18:21:10.614 | [1;0mMOUNT: Path 'C:\Users\gp629\Desktop\YD\Unity\DOSBOX\ORIGIN' found[1;0m
+[1;0m[1;2m2026-04-17 18:21:16.643 | [1;0mDISPLAY: VGA 320x200 256-colour graphics mode 13h at 70.086 Hz throttled VFR, scaled to 2133x1600 pixels with 1:1.2 (5:6) pixel aspect ratio[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.221 | [1;0mPCSPEAKER: Shutting down impulse model[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.221 | [1;0mOPL: Shutting down OPL3[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.221 | [1;0mSB16: Shutting down[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.222 | [1;0mMPU-401: Shutting down[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.358 | [1;0mCAPTURE: Image capturer shutting down[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.358 | [1;0mDMA: Shutting down primary controller[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.358 | [1;0mDMA: Shutting down secondary controller[1;0m
+[1;0m[1;2m2026-04-17 18:21:23.403 | [1;0matexit[1;0m
